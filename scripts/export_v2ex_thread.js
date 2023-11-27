@@ -7,6 +7,7 @@
 // @match        https://v2ex.com/t/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=v2ex.com
 // @grant        none
+// @run-at       context-menu
 // ==/UserScript==
 
 !(function () {
@@ -16,14 +17,37 @@
         const headerLevel = index === 0 ? 1 : 2;
 
         if (headerLevel === 1) {
-          const lines = [`#`.repeat(headerLevel) + ' ' + thread.title, `#`.repeat(headerLevel + 1) + ` __${thread.time}__ ${thread.author}`, thread.content];
+          const lines = [
+            `#`.repeat(headerLevel) + ' ' + thread.title,
+            `原文地址：[${location.href}](${location.href})`,
+            `#`.repeat(headerLevel + 1) + ` _${thread.time}_ ${thread.author}`,
+            thread.content,
+          ];
           return lines.join('\n\n');
         }
 
-        const lines = [`#`.repeat(headerLevel) + ` __${thread.time}__ ${thread.author}`, thread.content];
+        const lines = [`#`.repeat(headerLevel) + ` _${thread.time}_ ${thread.author}`, thread.content];
         return lines.join('\n\n');
       })
       .join('\n\n');
+  }
+
+  function parseHtmlToStr(innerHtml) {
+    const p = new DOMParser();
+    const doc = p.parseFromString(innerHtml, 'text/html');
+
+    const result = [];
+
+    doc.body.childNodes.forEach(node => {
+      if (node.tagName === 'BR') {
+        result.push('\n\n');
+        return;
+      }
+
+      result.push(node.textContent);
+    });
+
+    return result.join('');
   }
 
   function parseReplyThread(el) {
@@ -35,7 +59,7 @@
     return boxes.map(box => {
       const author = box.querySelector('strong')?.textContent;
       const time = box.querySelector('.ago')?.title;
-      const content = box.querySelector('.reply_content').textContent;
+      const content = parseHtmlToStr(box.querySelector('.reply_content').innerHTML);
 
       return {
         author,
@@ -52,8 +76,8 @@
     var author = usernameElement.textContent.trim();
     var timestampElement = tempDiv.querySelector('.header .gray span');
     var time = timestampElement.getAttribute('title');
-    var contentElement = tempDiv.querySelector('.topic_content .markdown_body');
-    var content = contentElement.textContent.trim();
+    var contentElement = tempDiv.querySelector('.topic_content');
+    var content = parseHtmlToStr(contentElement.innerHTML);
 
     return {
       title,
