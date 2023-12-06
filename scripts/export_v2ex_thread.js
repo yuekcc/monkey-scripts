@@ -7,6 +7,7 @@
 // @match        https://v2ex.com/t/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=v2ex.com
 // @grant        GM_registerMenuCommand
+// @grant        GM_setClipboard
 // ==/UserScript==
 
 !(function () {
@@ -100,6 +101,10 @@
       .forEach(it => result.push(it));
 
     const doc = printMarkdown(result);
-    navigator.clipboard.writeText(doc).then(() => alert('已复制到粘贴板'));
+
+    setTimeout(() => {
+      GM_setClipboard(doc, 'text/plain');
+      alert('已复制到粘贴板');
+    }, 50);
   }
 })();
