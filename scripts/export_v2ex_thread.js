@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         V2EX 导出
 // @namespace   Violentmonkey Scripts
-// @version      0.1
+// @version      0.2
 // @description  导出 V2ex 帖子为 Markdown
 // @author       zhanlefeng
 // @match        https://v2ex.com/t/*
@@ -10,7 +10,7 @@
 // @grant        GM_setClipboard
 // ==/UserScript==
 
-!(function () {
+!(() => {
   GM_registerMenuCommand('导出讨论贴', doStuff);
 
   function doStuff() {
@@ -21,21 +21,25 @@
 
           if (headerLevel === 1) {
             const lines = [
-              `#`.repeat(headerLevel) + ' ' + thread.title,
+              `${'#'.repeat(headerLevel)} ${thread.title}`,
               `原文地址：[${location.href}](${location.href})`,
-              `#`.repeat(headerLevel + 1) + ` _${thread.time}_ ${thread.author}`,
+              `${'#'.repeat(headerLevel + 1)} _${thread.time}_ ${thread.author}`,
               thread.content,
             ];
             return lines.join('\n\n');
           }
 
-          const lines = [`#`.repeat(headerLevel) + ` _${thread.time}_ ${thread.author}`, thread.content];
+          const lines = [`${`#`.repeat(headerLevel)} _${thread.time}_ ${thread.author}`, thread.content];
           return lines.join('\n\n');
         })
         .join('\n\n');
     }
 
     function parseHtmlToStr(innerHtml) {
+      if (!innerHtml) {
+        return '';
+      }
+
       const p = new DOMParser();
       const doc = p.parseFromString(innerHtml, 'text/html');
 
@@ -54,7 +58,7 @@
     }
 
     function parseReplyThread(el) {
-      const boxes = [...el.querySelectorAll(`.cell td[align='left']`)];
+      const boxes = Array.from(el.querySelectorAll(`.cell td[align='left']`) || []);
       if (boxes.length === 0) {
         return [];
       }
@@ -62,7 +66,7 @@
       return boxes.map(box => {
         const author = box.querySelector('strong')?.textContent;
         const time = box.querySelector('.ago')?.title;
-        const content = parseHtmlToStr(box.querySelector('.reply_content').innerHTML);
+        const content = parseHtmlToStr(box.querySelector('.reply_content')?.innerHTML);
 
         return {
           author,
@@ -73,14 +77,14 @@
     }
 
     function parseMainThread(tempDiv) {
-      var titleElement = tempDiv.querySelector('h1');
-      var title = titleElement.textContent.trim();
-      var usernameElement = tempDiv.querySelector('.header .gray a[href^="/member/"]');
-      var author = usernameElement.textContent.trim();
-      var timestampElement = tempDiv.querySelector('.header .gray span');
-      var time = timestampElement.getAttribute('title');
-      var contentElement = tempDiv.querySelector('.topic_content');
-      var content = parseHtmlToStr(contentElement.innerHTML);
+      const titleElement = tempDiv.querySelector('h1');
+      const title = titleElement.textContent.trim();
+      const usernameElement = tempDiv.querySelector('.header .gray a[href^="/member/"]');
+      const author = usernameElement.textContent.trim();
+      const timestampElement = tempDiv.querySelector('.header .gray span');
+      const time = timestampElement.getAttribute('title');
+      const contentElement = tempDiv.querySelector('.topic_content');
+      const content = parseHtmlToStr(contentElement.innerHTML);
 
       return {
         title,
@@ -95,10 +99,11 @@
 
     const result = [];
     result.push(parseMainThread(mainThreadBox));
-    otherBoxes
-      .map(parseReplyThread)
-      .flat()
-      .forEach(it => result.push(it));
+    otherBoxes.flatMap(parseReplyThread).forEach(it => {
+      if (it.author && it.time && it.content) {
+        result.push(it);
+      }
+    });
 
     const doc = printMarkdown(result);
 
