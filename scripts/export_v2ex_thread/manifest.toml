@@ -1,0 +1,6 @@
+name = "V2EX 导出"
+version = "0.3"
+description = "导出 V2EX 帖子为 Markdown 文本"
+author = "zhanlefeng"
+match = ["https://v2ex.com/t/*"]
+grant = ["GM_registerMenuCommand", "GM_setClipboard"]

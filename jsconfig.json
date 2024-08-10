@@ -18,7 +18,7 @@
       "~/*": ["./src/*"],
       "@/*": ["./src/*"]
     },
-    "types": ["@types/node"]
+    "types": ["@types/bun", "@violentmonkey/types"]
   },
   "exclude": ["node_modules", "dist"]
 }

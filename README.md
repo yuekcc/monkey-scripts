@@ -4,7 +4,7 @@
 
 ## 脚本列表
 
-- [V2EX 帖子导出为 Markdown 文本](scripts/export_v2ex_thread.js)
+- [V2EX 帖子导出为 Markdown 文本](dist/export_v2ex_thread.js)
 
 ## Violentmonkey vs Tampermonkey
 
