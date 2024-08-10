@@ -1,14 +1,6 @@
 import path from 'node:path';
 import fs from 'node:fs/promises';
 
-const projectDirFlag = process.argv[2];
-if (!projectDirFlag) {
-  console.error('require projectDir');
-  process.exit(1);
-}
-
-const projectDir = path.resolve(import.meta.dirname, './scripts', projectDirFlag);
-
 async function printManifest(src) {
   const manifest = await import(src).then(m => m.default);
   const lines = [];
@@ -41,9 +33,9 @@ async function printScript(entrypoint) {
   return artifacts[0].text();
 }
 
-async function printMonkeyScript() {
-  const scriptMainFile = path.join(projectDir, 'main.js');
-  const manifestFile = path.join(projectDir, 'manifest.toml');
+async function printMonkeyScript(projectDir) {
+  const scriptMainFile = path.resolve(projectDir, 'main.js');
+  const manifestFile = path.resolve(projectDir, 'manifest.toml');
 
   const manifestBlock = await printManifest(manifestFile);
   const codeBlock = await printScript(scriptMainFile);
@@ -53,9 +45,35 @@ async function printMonkeyScript() {
 }
 
 const outDir = 'dist';
-if (await fs.exists(outDir)) {
-  await fs.rm(outDir, { recursive: true, force: true });
+async function initOutputDir() {
+  if (await fs.exists(outDir)) {
+    await fs.rm(outDir, { recursive: true, force: true });
+  }
+  await fs.mkdir(outDir);
 }
-await fs.mkdir(outDir);
-const monkeyScript = await printMonkeyScript();
-await fs.writeFile(path.join(outDir, `${path.basename(projectDir)}.js`), monkeyScript, 'utf-8');
+
+const projectDirs = [];
+const scriptsDir = path.resolve(import.meta.dirname, './scripts');
+
+const projectDirFlag = process.argv[2];
+if (projectDirFlag) {
+  const projectDir = path.resolve(scriptsDir, projectDirFlag);
+  projectDirs.push(projectDir);
+} else {
+  const dirs = await fs.readdir(scriptsDir);
+  for (const dir of dirs) {
+    const dirPath = path.resolve(scriptsDir, dir);
+    const stat = await fs.stat(dirPath);
+
+    if (stat.isDirectory()) {
+      projectDirs.push(dirPath);
+    }
+  }
+}
+
+await initOutputDir();
+for (const projectDir of projectDirs) {
+  console.log('Build monkey script project:', path.basename(projectDir));
+  const monkeyScript = await printMonkeyScript(projectDir);
+  await fs.writeFile(path.resolve(outDir, `${path.basename(projectDir)}.js`), monkeyScript, 'utf-8');
+}
