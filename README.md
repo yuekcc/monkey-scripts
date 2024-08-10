@@ -6,6 +6,12 @@
 
 - [V2EX 帖子导出为 Markdown 文本](dist/export_v2ex_thread.js)
 
+## 构建
+
+```sh
+bun run build
+```
+
 ## Violentmonkey vs Tampermonkey
 
 Violentmonkey 与 Tampermonkey 都是由 Greasemonkey 发展而来，都支持用户脚本。通过用户脚本可以修改页面上的一些内容。
