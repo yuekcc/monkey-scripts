@@ -1,0 +1,28 @@
+name = "my-user-script"
+version = "0.1"
+description = "a violentmonkey user-script"
+author = "no_name"
+match = ["*://*.com/*"]
+grant = [
+    "GM_info",
+    "GM_getValue",
+    "GM_getValues",
+    "GM_setValue",
+    "GM_setValues",
+    "GM_deleteValue",
+    "GM_deleteValues",
+    "GM_listValues",
+    "GM_addValueChangeListener",
+    "GM_removeValueChangeListener",
+    "GM_getResourceText",
+    "GM_getResourceURL",
+    "GM_addElement",
+    "GM_addStyle",
+    "GM_openInTab",
+    "GM_registerMenuCommand",
+    "GM_unregisterMenuCommand",
+    "GM_notification",
+    "GM_setClipboard",
+    "GM_xmlhttpRequest",
+    "GM_download",
+]
