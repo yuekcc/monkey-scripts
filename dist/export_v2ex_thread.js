@@ -10,6 +10,7 @@
 
 !(() => {
 // scripts/export_v2ex_thread/main.js
+GM_registerMenuCommand("导出讨论贴", doStuff);
 function doStuff() {
   function printMarkdown(threads) {
     const mainContent = threads.map((thread, index) => {
@@ -17,18 +18,28 @@ function doStuff() {
       if (headerLevel === 1) {
         const lines2 = [
           `${"#".repeat(headerLevel)} ${thread.title}`,
-          `\u539F\u6587\u5730\u5740\uFF1A[${location.href}](${location.href})`,
+          `原文地址：[${location.href}](${location.href})`,
           `${"#".repeat(headerLevel + 1)} ${thread.author}`,
           `_${thread.time}_`,
           thread.content
         ];
-        return lines2.join("\n\n");
+        return lines2.join(`
+
+`);
       }
       const lines = [`${"#".repeat(headerLevel)} ${thread.author}`, `_${thread.time}_`, thread.content];
-      return lines.join("\n\n");
-    }).join("\n\n");
+      return lines.join(`
+
+`);
+    }).join(`
+
+`);
     const now = new Date;
-    const footer = `\n\n---\n\n- ${now.getFullYear()}\u5E74${now.getMonth() + 1}\u6708${now.getDate()}\u65E5\uFF0C\u8F6C\u8F7D
+    const footer = `
+
+---
+
+- ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日，转载
 
 `;
     return mainContent + footer;
@@ -42,7 +53,9 @@ function doStuff() {
     const result2 = [];
     doc2.body.childNodes.forEach((node) => {
       if (node.tagName === "BR") {
-        result2.push("\n\n");
+        result2.push(`
+
+`);
         return;
       }
       result2.push(node.textContent);
@@ -89,9 +102,8 @@ function doStuff() {
   const doc = printMarkdown(result);
   GM_setClipboard(doc, "text/plain");
   setTimeout(() => {
-    alert("\u5DF2\u590D\u5236\u5230\u7C98\u8D34\u677F");
+    alert("已复制到粘贴板");
   }, 50);
 }
-GM_registerMenuCommand("\u5BFC\u51FA\u8BA8\u8BBA\u8D34", doStuff);
 
 })();
